@@ -4,6 +4,7 @@
 * Launch an EC2 instance: search ec2 - click launch instance - Name the instance (Ecommerce-sever) - select Amazon linux as AMI OS - instance type (t3 micro free tier) - create new key pair and download - setup security group - launch instance.
 
 Below shows the instance in running state
+
 ![alt text](images_ec2/Capture_1.PNG)
 
 ## 2. Connect to the EC2 instance through ssh: 
@@ -91,6 +92,58 @@ Image of this shown below:
 ![alt text](images_ec2/Capture_9.PNG)
 
 ## 7. Build and Serve the React Frontend
+
+Now that your backend (Node.js + Express + MongoDB) is running, it's time to set up, build, and serve your React frontend on your EC2 instance.
+
+Now, create your frontend inside the MERN-project folder using **npx create-react-app client**. This creates a client folder and sets up a React project inside it as shown below.
+![alt text](images_ec2/Capture_22.PNG)
+
+Then run **npm run build**
+![alt text](images_ec2/Capture_24.PNG)
+
+The build was successful, but the issue now is a permission error when trying to install serve globally by running **sudo npm install -g serve** as shown below
+![alt text](images_ec2/Capture_25.PNG)
+
+Then serve your react app by running **serve -s build** as shown below
+![alt text](images_ec2/Capture_26.PNG)
+
+## **Accessing my app on the browser**
+Then i tried accessing it on my browser by visiting my instance public ip with - **http://<your-ec2-public-ip>:3000** as shown below:
+![alt text](images_ec2/Capture_29.PNG)
+
+## **Step 9: installing and configuring nginx as a reverse proxy**
+
+My React app is currently being served using **serve -s build -l 3000**, but this method isn’t ideal for production because:
+* The server stops when you close the terminal.
+* It’s not optimized for handling traffic.
+
+### Solution? Use Nginx as a reverse proxy!
+A reverse proxy is a server that sits between your users and your actual application. Instead of users directly accessing your React app on port 3000, they access Nginx on port 80 (default HTTP port), and Nginx then forwards the request to your React app.
+
+**Installing Nginx**
+Exit from the client and remote repository project directory and change directory to connection to your instance, then run - **sudo yum install nginx -y** as shown below.
+![alt text](images_ec2/Capture_30.PNG)
+
+Start the nginx service using - **sudo systemctl start nginx**, then enable it to start on boot using - **sudo systemctl enable nginx**
+![alt text](images_ec2/Capture_31.PNG)
+
+Then confirm nginx is running using - **system ctl status**
+![alt text](images_ec2/Capture_32.PNG)
+
+**Create a new nginx configuration file**
+Run - **sudo vi /etc/nginx/conf.d/mern.conf** and paste the configuration inside it as shown below:
+![alt text](images_ec2/Capture_33.PNG)
+
+To test if its actually working, i visisted my ec2 public ip on my browser to load nginx default page as seen below
+![alt text](images_ec2/Capture_34.PNG)
+
+**Move my react build to the nginx root folder**
+My React app's production files are inside the build folder. Move them to **/var/www/html/:**
+* **sudo rm -rf /var/www/html/***
+* sudo cp -r ~/MERN_ec2/client/build/* /var/www/html/
+
+So below is my app being accessed on the browser
+![alt text](images_ec2/Capture_35.PNG)
 
 
 
